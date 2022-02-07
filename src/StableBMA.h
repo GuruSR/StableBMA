@@ -4,11 +4,6 @@
  * This fork is to improve Watchy functionality based on board version (via RTCType).
  * Version 1.0, February  6, 2022
  *
- * This library offers async NTP, which returns the seconds from Epoch (1970 and beyond) in 2 variations
- * for use with Watchy watch face code.
- *
- * This library is adapted to work with the Arduino ESP32 and any other project that has similar libraries.
- *
  * MIT License
  *
  * Copyright (c) 2022 GuruSR
