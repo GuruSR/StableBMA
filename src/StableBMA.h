@@ -71,7 +71,7 @@ public:
     bool selfTest();   // Same as original.
 
     uint8_t getDirection();  // Same as original except it is orientated to show the proper higher edge on your Watchy.
-	bool IsUp();             // Returns True if your Watchy is in the Tilt position (with flexible room).
+    bool IsUp();             // Returns True if your Watchy is in the Tilt position (with flexible room).
 
     bool setAccelConfig(Acfg &cfg);    // Same as original.
     bool getAccelConfig(Acfg &cfg);    // Same as original.
@@ -90,7 +90,7 @@ public:
     bool isTilt();        // Same as original.  Can be used AFTER didBMAWakeUp(wakeupBit) to determine if this is true or not.
     bool isActivity();    // Same as original.  Can be used AFTER didBMAWakeUp(wakeupBit) to determine if this is true or not.
     bool isAnyNoMotion(); // Same as original.  Can be used AFTER didBMAWakeUp(wakeupBit) to determine if this is true or not.
-	bool didBMAWakeUp(uint64_t hwWakeup); // Allows you to tell via wakeupBit, if the BMA woke the Watchy, if it did, it reads the reason so you can use the above 4 functions.
+    bool didBMAWakeUp(uint64_t hwWakeup); // Allows you to tell via wakeupBit, if the BMA woke the Watchy, if it did, it reads the reason so you can use the above 4 functions.
 
     bool resetStepCounter();  // Same as original.
     uint32_t getCounter();    // Same as original.
@@ -102,7 +102,6 @@ public:
     uint16_t getStatus();     // Same as original.
     uint32_t getSensorTime(); // Same as original.
 
-
     const char *getActivity(); // Same as original.
     bool setRemapAxes(struct bma423_axes_remap *remap_data); // Same as original.
 
@@ -112,10 +111,10 @@ public:
     bool enableWakeupInterrupt(bool en = true);           // Same as original.
     bool enableAnyNoMotionInterrupt(bool en = true);      // Same as original.
     bool enableActivityInterrupt(bool en = true);         // Same as original.
-	uint32_t WakeMask();   // Returns the necessary value to OR in the esp_sleep_enable_ext1_wakeup function to request BMA wakeups to work.
-	bool defaultConfig();  // This is the default Configuration settings removed from Watchy::_bmaConfig(), corrected based on needs of RTCType.  _bmaConfig() should only consist of the begin() call and after that, the defaultConfig().
-	bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
-	bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
+    uint32_t WakeMask();   // Returns the necessary value to OR in the esp_sleep_enable_ext1_wakeup function to request BMA wakeups to work.
+    bool defaultConfig();  // This is the default Configuration settings removed from Watchy::_bmaConfig(), corrected based on needs of RTCType.  _bmaConfig() should only consist of the begin() call and after that, the defaultConfig().
+    bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
+    bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
 
 private:
     bma4_com_fptr_t __readRegisterFptr;
@@ -123,7 +122,7 @@ private:
     bma4_delay_fptr_t __delayCallBlackFptr;
 
     uint8_t __address;
-	uint8_t __RTCTYPE;
+    uint8_t __RTCTYPE;
     uint16_t __IRQ_MASK;
     bool __init;
     struct bma4_dev __devFptr;
