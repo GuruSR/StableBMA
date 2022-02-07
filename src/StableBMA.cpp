@@ -66,7 +66,7 @@ bool StableBMA::begin(bma4_com_fptr_t readCallBlack,
     __readRegisterFptr = readCallBlack;
     __writeRegisterFptr = writeCallBlack;
     __delayCallBlackFptr = delayCallBlack;
-	__RTCTYPE = RTCType;
+    __RTCTYPE = RTCType;
 
     __devFptr.dev_addr        = address;
     __devFptr.interface       = BMA4_I2C_INTERFACE;
@@ -189,7 +189,7 @@ bool StableBMA::getAccel(Accel &acc)
     if (bma4_read_accel_xyz(&acc, &__devFptr) != BMA4_OK) {
         return false;
     }
-	if (__RTCTYPE != 1) { acc.x = -acc.x; acc.y = -acc.y; }
+    if (__RTCTYPE != 1) { acc.x = -acc.x; acc.y = -acc.y; }
     return true;
 }
 
@@ -300,9 +300,9 @@ bool StableBMA::isAnyNoMotion()
 bool StableBMA::didBMAWakeUp(uint64_t hwWakeup)
 {
     bool B =((hwWakeup & BMA423x_INT1_MASK) || (hwWakeup & BMA423x_INT2_MASK));
-	if (!B) return B;
+    if (!B) return B;
     if (getINT()) return B;
-	return false;
+    return false;
 }
 
 
@@ -390,12 +390,12 @@ bool StableBMA::defaultConfig()
 
 bool StableBMA::enableDoubleClickWake(bool en)
 {
-	if (enableFeature(BMA423_WAKEUP,en)) return enableWakeupInterrupt(en);
-	return false;
+    if (enableFeature(BMA423_WAKEUP,en)) return enableWakeupInterrupt(en);
+    return false;
 }
 
 bool StableBMA::enableTiltWake(bool en)
 {
     if (enableFeature(BMA423_TILT,en)) return enableTiltInterrupt(en);
-	return false;
+    return false;
 }
