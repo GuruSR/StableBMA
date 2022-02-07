@@ -17,8 +17,9 @@ bool isAnyNoMotion();       // Same as original.  Can be used AFTER didBMAWakeUp
 bool didBMAWakeUp(uint64_t hwWakeup); // Allows you to tell via wakeupBit, if the BMA woke the Watchy, if it did, 
                                          it reads the reason so you can use the above 4 functions.
 
-uint32_t WakeMask();   // Returns the necessary value to OR in the esp_sleep_enable_ext1_wakeup function to request BMA wakeups to work.
-bool defaultConfig();  // This is the default Configuration settings removed from Watchy::_bmaConfig(), corrected based on needs of RTCType.
+uint32_t WakeMask();   // Returns the necessary value to OR in the esp_sleep_enable_ext1_wakeup function to request BMA wakeups.
+bool defaultConfig();  // This is the default Configuration settings removed from Watchy::
+                          _bmaConfig() corrected based on needs of RTCType.
                           _bmaConfig() should only consist of the begin() call and after that, the defaultConfig().
                           See example Usage.md for information on usage.
 
