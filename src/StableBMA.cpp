@@ -3,7 +3,7 @@
 /* Forked from bma.h by GuruSR (https://www.github.com/GuruSR/StableBMA) 
  * This fork is to improve Watchy functionality based on board version (via RTCType).
  * Version 1.0, February  6, 2022
- *
+ * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
  *
  * MIT License
  *
@@ -179,8 +179,7 @@ float StableBMA::readTemperature()
 float StableBMA::readTemperatureF()
 {
     float temp = readTemperature();
-    if (temp != 0) return (temp * 1.8 + 32.0);
-    return 0;
+    return (temp * 1.8 + 32.0);
 }
 
 bool StableBMA::getAccel(Accel &acc)
