@@ -71,8 +71,8 @@ if (sensor.didBMAWakeUp(wakeupBit))
 In your ```deepSleep()``` function:
 
 ```
-sensor.enableTiltWake([**{true}**/false]);         // true by default, optional true/false.
-sensor.enableDoubleClickWake([**{true}**/false]);
+sensor.enableTiltWake([{true}/false]);         // true by default, optional [true/false].
+sensor.enableDoubleClickWake([{true}/false]);
 ```
 
 And alter your ```esp_sleep_enable_ext1_wakeup``` function, place ```sensor.WakeMask() |``` in front of ```BTN_PIN_MASK``` if you want the ESP32 to wake when either of the two interupts happen.
