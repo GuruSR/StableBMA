@@ -25,4 +25,5 @@ bool defaultConfig();  // This is the default Configuration settings removed fro
 
 bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
 bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
+float readTemperatureF();                   // Fixes 0 Celcius bug.
 ```
