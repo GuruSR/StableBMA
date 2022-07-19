@@ -1,13 +1,15 @@
 #include "StableBMA.h"
 
-/* Forked from bma.h by GuruSR (https://www.github.com/GuruSR/StableBMA) 
+/* Forked from bma.cpp by GuruSR (https://www.github.com/GuruSR/StableBMA) 
  * This fork is to improve Watchy functionality based on board version (via RTCType).
- * Version 1.0, February  6, 2022
+ * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
+ * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
  *
  * MIT License
  *
- * Copyright (c) 2022 GuruSR
+ * Copyright (c) 2020 Lewis He
+ * Copyright (c) 2022 for StableBMA GuruSR
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +28,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ * 
+ * StableBMA is a fork of:
+ * bma.cpp - Arduino library for Bosch BMA423 accelerometer software library.
+ * Created by Lewis He on July 27, 2020.
+ * github:https://github.com/lewisxhe/BMA423_Library
 */
 
 #define DEBUGPORT Serial
@@ -34,6 +41,7 @@
 #else
 #define DEBUG(...)
 #endif
+#include <Arduino.h>
 
 StableBMA::StableBMA()
 {
@@ -43,16 +51,9 @@ StableBMA::StableBMA()
     __init = false;
 }
 
-StableBMA::~StableBMA()
-{
+StableBMA::~StableBMA() {}
 
-}
-
-bool StableBMA::begin(bma4_com_fptr_t readCallBlack,
-                   bma4_com_fptr_t writeCallBlack,
-                   bma4_delay_fptr_t delayCallBlack,
-                   uint8_t RTCType,
-                   uint8_t address)
+bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType, uint8_t address)
 {
 
     if (__init ||
@@ -178,7 +179,10 @@ float StableBMA::readTemperature()
 
 float StableBMA::readTemperatureF()
 {
-    float temp = readTemperature();
+    int32_t data = 0;
+    bma4_get_temperature(&data, BMA4_DEG, &__devFptr);
+    float temp = (float)data / (float)BMA4_SCALE_TEMP;
+    if (((data - 23) / BMA4_SCALE_TEMP) == 0x80) return 0;
     return (temp * 1.8 + 32.0);
 }
 
@@ -360,11 +364,11 @@ bool StableBMA::defaultConfig()
     config.output_en = BMA4_OUTPUT_ENABLE;
     config.input_en = BMA4_INPUT_DISABLE;
 
+//    if (bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &__devFptr) != BMA4_OK) {
+//        DEBUG("BMA423 DEF CFG FAIL\n");
+//        return false;
+//    }
 
-    if (bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &__devFptr) != BMA4_OK) {
-        DEBUG("BMA423 DEF CFG FAIL\n");
-        return false;
-    }
     Acfg cfg;
     cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     cfg.range = BMA4_ACCEL_RANGE_2G;

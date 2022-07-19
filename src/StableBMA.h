@@ -2,12 +2,14 @@
 
 /* Forked from bma.h by GuruSR (https://www.github.com/GuruSR/StableBMA) 
  * This fork is to improve Watchy functionality based on board version (via RTCType).
- * Version 1.0, February  6, 2022
+ * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
+ * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
  *
  * MIT License
  *
- * Copyright (c) 2022 GuruSR
+ * Copyright (c) 2020 Lewis He
+ * Copyright (c) 2022 for StableBMA GuruSR
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +28,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ * 
+ * StableBMA is a fork of:
+ * bma.h- Arduino library for Bosch BMA423 accelerometer software library.
+ * Created by Lewis He on July 27, 2020.
+ * github:https://github.com/lewisxhe/BMA423_Library
 */
 
 #ifdef  ARDUINO
@@ -97,7 +104,7 @@ public:
     uint32_t getCounter();    // Same as original.
 
     float readTemperature();  // Same as original.
-    float readTemperatureF(); // Same as original.
+    float readTemperatureF(); // Fixed to allow for 0C to be an actual temperature.
 
     uint16_t getErrorCode();  // Same as original.
     uint16_t getStatus();     // Same as original.
