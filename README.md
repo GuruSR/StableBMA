@@ -1,5 +1,5 @@
 # StableBMA
-A fork of the original bma.h/.cpp reworked and upgraded for the Watchy.
+A fork of the original (https://github.com/lewisxhe/BMA423_Library) bma.h/.cpp reworked and upgraded for the Watchy.
 
 This was done to provide a working model of the bma.h for Watchy, that works with either version (and future ones that require alteration).
 
@@ -25,5 +25,5 @@ bool defaultConfig();  // This is the default Configuration settings removed fro
 
 bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
 bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
-float readTemperatureF();                   // Fixes 0 Celcius bug.
+float readTemperatureF();                   // Fixes 0 Celcius bug and also will return 0 if an error.
 ```
