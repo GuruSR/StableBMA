@@ -59,7 +59,6 @@ enum {
 #define BMA423x_INT2_PIN 12
 #define BMA423x_INT1_MASK (1<<BMA423x_INT1_PIN)
 #define BMA423x_INT2_MASK (1<<BMA423x_INT2_PIN)
-#define GSR_ACC_INT_MASK GPIO_SEL_14
 
 typedef struct bma4_accel Accel;
 typedef struct bma4_accel_config Acfg;
