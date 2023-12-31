@@ -5,6 +5,7 @@
  * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
  * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
+ * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
  *
  * MIT License
  *
@@ -35,6 +36,9 @@
  * github:https://github.com/lewisxhe/BMA423_Library
 */
 
+#ifndef STABLEBMA_H_INCLUDED
+#define STABLEBMA_H_INCLUDED
+
 #ifdef  ARDUINO
 #include <Arduino.h>
 #else
@@ -54,14 +58,10 @@ enum {
 } ;
 #endif
 
-// BMA For Tilt/DTap
-#define BMA423x_INT1_PIN 14
-#define BMA423x_INT2_PIN 12
-#define BMA423x_INT1_MASK (1<<BMA423x_INT1_PIN)
-#define BMA423x_INT2_MASK (1<<BMA423x_INT2_PIN)
-
 typedef struct bma4_accel Accel;
 typedef struct bma4_accel_config Acfg;
+
+#endif
 
 class StableBMA
 {
@@ -71,7 +71,7 @@ public:
     ~StableBMA();
 
     bool begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType,
-               uint8_t address = BMA4_I2C_ADDR_PRIMARY);  // Same as original but requires an RTCType from WatchyRTC or SmallRTC.
+               uint8_t address = BMA4_I2C_ADDR_PRIMARY, uint8_t BMA423_INT1_PIN = 14, uint8_t BMA423_INT2_PIN = 12);  // Same as original but requires an RTCType and INT PINS from WatchyRTC or SmallRTC.
 
     void softReset();  // Same as original.
     void shutDown();   // Same as original.
@@ -103,8 +103,8 @@ public:
     bool resetStepCounter();  // Same as original.
     uint32_t getCounter();    // Same as original.
 
-    float readTemperature();  // Same as original.
-    float readTemperatureF(); // Fixed to allow for 0C to be an actual temperature.
+    float readTemperature(bool Metric = true);  // Changed to support both temperatures.
+    float readTemperatureF(); // Left for compatibility with older code.
 
     uint16_t getErrorCode();  // Same as original.
     uint16_t getStatus();     // Same as original.

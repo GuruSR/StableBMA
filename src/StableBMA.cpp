@@ -5,6 +5,7 @@
  * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
  * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
+ * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
  *
  * MIT License
  *
@@ -42,6 +43,11 @@
 #define DEBUG(...)
 #endif
 #include <Arduino.h>
+// BMA For Tilt/DTap
+RTC_DATA_ATTR uint8_t BMA423x_INT1_PIN;
+RTC_DATA_ATTR uint8_t BMA423x_INT2_PIN;
+RTC_DATA_ATTR uint32_t BMA423x_INT1_MASK;
+RTC_DATA_ATTR uint32_t BMA423x_INT2_MASK;
 
 StableBMA::StableBMA()
 {
@@ -53,7 +59,7 @@ StableBMA::StableBMA()
 
 StableBMA::~StableBMA() {}
 
-bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType, uint8_t address)
+bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType, uint8_t address, uint8_t BMA423_INT1_PIN, uint8_t BMA423_INT2_PIN)
 {
 
     if (__init ||
@@ -63,6 +69,11 @@ bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBl
             RTCType == 0) {
         return true;
     }
+
+    BMA423x_INT1_PIN = BMA423_INT1_PIN;
+    BMA423x_INT2_PIN = BMA423_INT2_PIN;
+    BMA423x_INT1_MASK = (1<<BMA423x_INT1_PIN);
+    BMA423x_INT2_MASK = (1<<BMA423x_INT2_PIN);
 
     __readRegisterFptr = readCallBlack;
     __writeRegisterFptr = writeCallBlack;
@@ -162,29 +173,16 @@ bool StableBMA::IsUp() {
     return (acc.x <= 0 && acc.x >= -700 && acc.y >= -300 && acc.y <= 300 && acc.z <= -750 && acc.z >= -1070);
 }
 
-float StableBMA::readTemperature()
-{
-    int32_t data = 0;
-    bma4_get_temperature(&data, BMA4_DEG, &__devFptr);
-    float res = (float)data / (float)BMA4_SCALE_TEMP;
-    /* 0x80 - temp read from the register and 23 is the ambient temp added.
-     * If the temp read from register is 0x80, it means no valid
-     * information is available */
-    if (((data - 23) / BMA4_SCALE_TEMP) == 0x80) {
-        res = 0;
-    }
-    return res;
-}
-
-
-float StableBMA::readTemperatureF()
+float StableBMA::readTemperature(bool Metric)
 {
     int32_t data = 0;
     bma4_get_temperature(&data, BMA4_DEG, &__devFptr);
     float temp = (float)data / (float)BMA4_SCALE_TEMP;
     if (((data - 23) / BMA4_SCALE_TEMP) == 0x80) return 0;
-    return (temp * 1.8 + 32.0);
+    return (Metric ? temp : (temp * 1.8 + 32.0));
 }
+
+float StableBMA::readTemperatureF() { StableBMA::readTemperature(false); }
 
 bool StableBMA::getAccel(Accel &acc)
 {
@@ -192,7 +190,7 @@ bool StableBMA::getAccel(Accel &acc)
     if (bma4_read_accel_xyz(&acc, &__devFptr) != BMA4_OK) {
         return false;
     }
-    if (__RTCTYPE != 1) { acc.x = -acc.x; acc.y = -acc.y; }
+    if (__RTCTYPE != 1 && __RTCTYPE != 3) { acc.x = -acc.x; acc.y = -acc.y; }
     return true;
 }
 
@@ -364,10 +362,6 @@ bool StableBMA::defaultConfig()
     config.output_en = BMA4_OUTPUT_ENABLE;
     config.input_en = BMA4_INPUT_DISABLE;
 
-//    if (bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &__devFptr) != BMA4_OK) {
-//        DEBUG("BMA423 DEF CFG FAIL\n");
-//        return false;
-//    }
 
     Acfg cfg;
     cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
@@ -376,13 +370,15 @@ bool StableBMA::defaultConfig()
     cfg.perf_mode = BMA4_CONTINUOUS_MODE;
     if (setAccelConfig(cfg)){
         if (enableAccel()){
-            setINTPinConfig(config, BMA4_INTR1_MAP);
-
+            if (bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &__devFptr) != BMA4_OK) {
+                DEBUG("BMA423 DEF CFG FAIL\n");
+                return false;
+            }
             struct bma423_axes_remap remap_data;
             remap_data.x_axis = 1;
-            remap_data.x_axis_sign = (__RTCTYPE == 1 ? 1 : 0);
+            remap_data.x_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
             remap_data.y_axis = 0;
-            remap_data.y_axis_sign = (__RTCTYPE == 1 ? 1 : 0);
+            remap_data.y_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
             remap_data.z_axis = 2;
             remap_data.z_axis_sign = 1;
             return setRemapAxes(&remap_data);
