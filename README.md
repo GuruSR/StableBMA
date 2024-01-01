@@ -1,4 +1,4 @@
-# StableBMA
+# StableBMA [![Arduino Lint](https://github.com/GuruSR/StableBMA/actions/workflows/main.yml/badge.svg)](https://github.com/GuruSR/StableBMA/actions/workflows/main.yml)
 A fork of the original (https://github.com/lewisxhe/BMA423_Library) bma.h/.cpp reworked and upgraded for the Watchy.
 
 This was done to provide a working model of the bma.h for Watchy, that works with either version (and future ones that require alteration).
@@ -25,5 +25,6 @@ bool defaultConfig();  // This is the default Configuration settings removed fro
 
 bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
 bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
+float readTemperature(bool Metric = true);  // Diferent from the original, 0C bug fixed and offers Imperial temperature.
 float readTemperatureF();                   // Fixes 0 Celcius bug and also will return 0 if an error.
 ```
