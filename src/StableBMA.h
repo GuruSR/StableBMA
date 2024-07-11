@@ -6,6 +6,8 @@
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
  * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
  * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
+ * Version 1.4, February 24, 2024 - Added Low Power mode to the defaultConfig().
+ * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added conditionBMA.
  *
  * MIT License
  *
@@ -120,7 +122,7 @@ public:
     bool enableAnyNoMotionInterrupt(bool en = true);      // Same as original.
     bool enableActivityInterrupt(bool en = true);         // Same as original.
     uint32_t WakeMask();   // Returns the necessary value to OR in the esp_sleep_enable_ext1_wakeup function to request BMA wakeups to work.
-    bool defaultConfig();  // This is the default Configuration settings removed from Watchy::_bmaConfig(), corrected based on needs of RTCType.  _bmaConfig() should only consist of the begin() call and after that, the defaultConfig().
+    bool defaultConfig(bool LowPower = true);   // This is the default Configuration settings removed from Watchy::_bmaConfig(), corrected based on needs of RTCType.  _bmaConfig() should only consist of the begin() call and after that, the defaultConfig().
     bool enableDoubleClickWake(bool en = true); // Enables/Disables DoubleClick and the Wake Interrupt
     bool enableTiltWake(bool en = true);        // Enables/Disables Tilt and the Wake Interrupt
 

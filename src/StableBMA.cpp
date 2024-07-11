@@ -6,6 +6,8 @@
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
  * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
  * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
+ * Version 1.4, February 24, 2024 - Added Low Power mode to the defaultConfig().
+ * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added conditionBMA.
  *
  * MIT License
  *
@@ -49,6 +51,9 @@ RTC_DATA_ATTR uint8_t BMA423x_INT2_PIN;
 RTC_DATA_ATTR uint32_t BMA423x_INT1_MASK;
 RTC_DATA_ATTR uint32_t BMA423x_INT2_MASK;
 
+// BMA condition
+RTC_DATA_ATTR uint8_t conditionBMA;
+
 StableBMA::StableBMA()
 {
     __readRegisterFptr = nullptr;
@@ -61,7 +66,6 @@ StableBMA::~StableBMA() {}
 
 bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType, uint8_t address, uint8_t BMA423_INT1_PIN, uint8_t BMA423_INT2_PIN)
 {
-
     if (__init ||
             readCallBlack == nullptr ||
             writeCallBlack == nullptr ||
@@ -89,7 +93,7 @@ bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBl
     __devFptr.resolution      = 12;
     __devFptr.feature_len     = BMA423_FEATURE_SIZE;
 
-    softReset();
+    StableBMA::softReset();
 
     __delayCallBlackFptr(20);
 
@@ -153,7 +157,7 @@ bool StableBMA::selfTest()
 uint8_t StableBMA::getDirection()
 {
     Accel acc;
-    if (!getAccel(acc)) return 0;
+    if (!StableBMA::getAccel(acc)) return 0;
     uint16_t absX = abs(acc.x);
     uint16_t absY = abs(acc.y);
     uint16_t absZ = abs(acc.z);
@@ -169,7 +173,9 @@ uint8_t StableBMA::getDirection()
 
 bool StableBMA::IsUp() {
     Accel acc;
-    if (!getAccel(acc)) return false;
+    bool b;
+    if (conditionBMA & 1) return false; // Broken Accelerometer
+    if (!StableBMA::getAccel(acc)) return false;
     return (acc.x <= 0 && acc.x >= -700 && acc.y >= -300 && acc.y <= 300 && acc.z <= -750 && acc.z >= -1070);
 }
 
@@ -187,10 +193,12 @@ float StableBMA::readTemperatureF() { StableBMA::readTemperature(false); }
 bool StableBMA::getAccel(Accel &acc)
 {
     memset(&acc, 0, sizeof(acc));
+    if (conditionBMA & 1) return false;
     if (bma4_read_accel_xyz(&acc, &__devFptr) != BMA4_OK) {
+        conditionBMA |= 1;
         return false;
     }
-    if (__RTCTYPE != 1 && __RTCTYPE != 3) { acc.x = -acc.x; acc.y = -acc.y; }
+    if (__RTCTYPE != 1) { acc.x = -acc.x; acc.y = -acc.y; }
     return true;
 }
 
@@ -203,7 +211,7 @@ bool StableBMA::getAccelEnable()
 
 bool StableBMA::disableAccel()
 {
-    return enableAccel(false);
+    return StableBMA::enableAccel(false);
 }
 
 bool StableBMA::enableAccel(bool en)
@@ -300,12 +308,11 @@ bool StableBMA::isAnyNoMotion()
 
 bool StableBMA::didBMAWakeUp(uint64_t hwWakeup)
 {
-    bool B =((hwWakeup & BMA423x_INT1_MASK) || (hwWakeup & BMA423x_INT2_MASK));
+    bool B =(hwWakeup & BMA423x_INT1_MASK);
     if (!B) return B;
-    if (getINT()) return B;
+    if (StableBMA::getINT()) return B;
     return false;
 }
-
 
 bool StableBMA::enableStepCountInterrupt(bool en)
 {
@@ -350,30 +357,37 @@ const char *StableBMA::getActivity()
 
 uint32_t StableBMA::WakeMask()
 {
-    return (BMA423x_INT1_MASK | BMA423x_INT2_MASK);
+    return BMA423x_INT1_MASK;
 }
 
-bool StableBMA::defaultConfig()
+bool StableBMA::defaultConfig(bool LowPower)
 {
     struct bma4_int_pin_config config ;
+    Acfg cfg;
     config.edge_ctrl = BMA4_LEVEL_TRIGGER;
     config.lvl = BMA4_ACTIVE_HIGH;
     config.od = BMA4_PUSH_PULL;
     config.output_en = BMA4_OUTPUT_ENABLE;
     config.input_en = BMA4_INPUT_DISABLE;
 
-
-    Acfg cfg;
     cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     cfg.range = BMA4_ACCEL_RANGE_2G;
     cfg.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
-    cfg.perf_mode = BMA4_CONTINUOUS_MODE;
-    if (setAccelConfig(cfg)){
-        if (enableAccel()){
+    cfg.perf_mode = (LowPower ? BMA4_CIC_AVG_MODE : BMA4_CONTINUOUS_MODE);  // Testing for Low Power done by Michal Szczepaniak
+
+    if (StableBMA::setAccelConfig(cfg)){
+        if (StableBMA::enableAccel()){
             if (bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &__devFptr) != BMA4_OK) {
                 DEBUG("BMA423 DEF CFG FAIL\n");
                 return false;
             }
+            enableDoubleClickWake(false);
+            enableTiltWake(false);
+            enableActivityInterrupt(false);
+            enableAnyNoMotionInterrupt(false);
+            enableWakeupInterrupt(false);
+            enableTiltInterrupt(false);
+            enableStepCountInterrupt(false);
             struct bma423_axes_remap remap_data;
             remap_data.x_axis = 1;
             remap_data.x_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
@@ -381,7 +395,7 @@ bool StableBMA::defaultConfig()
             remap_data.y_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
             remap_data.z_axis = 2;
             remap_data.z_axis_sign = 1;
-            return setRemapAxes(&remap_data);
+            return StableBMA::setRemapAxes(&remap_data);
         }
     }
     return false;
@@ -389,12 +403,12 @@ bool StableBMA::defaultConfig()
 
 bool StableBMA::enableDoubleClickWake(bool en)
 {
-    if (enableFeature(BMA423_WAKEUP,en)) return enableWakeupInterrupt(en);
+    if (StableBMA::enableFeature(BMA423_WAKEUP,en)) return StableBMA::enableWakeupInterrupt(en);
     return false;
 }
 
 bool StableBMA::enableTiltWake(bool en)
 {
-    if (enableFeature(BMA423_TILT,en)) return enableTiltInterrupt(en);
+    if (StableBMA::enableFeature(BMA423_TILT,en)) return StableBMA::enableTiltInterrupt(en);
     return false;
 }
