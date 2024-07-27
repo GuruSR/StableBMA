@@ -188,7 +188,9 @@ float StableBMA::readTemperature(bool Metric)
     return (Metric ? temp : (temp * 1.8 + 32.0));
 }
 
-float StableBMA::readTemperatureF() { StableBMA::readTemperature(false); }
+float StableBMA::readTemperatureF() { 
+    return StableBMA::readTemperature(false); 
+}
 
 bool StableBMA::getAccel(Accel &acc)
 {
