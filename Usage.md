@@ -1,5 +1,7 @@
 Download StableBMA.h & .cpp into a library folder of the same name.
 
+**NOTE:  Starting with StableBMA 1.6, the begin function has changed, see example below.**
+
 To use this instead of bma.h, EDIT your Watchy.h:
 
 Find:
@@ -25,11 +27,11 @@ it should read:
 Find:
 ```void Watchy::_bmaConfig()```
 
-REPLACE the entire function with:
+REPLACE the entire function with:  (Items in [] are optional.)
 ```
 void Watchy::_bmaConfig() {
 
-  if (sensor.begin(_readRegister, _writeRegister, delay, RTC.rtcType) == false) {
+  if (sensor.begin(_readRegister, _writeRegister, delay, RTC.getType(),BMA4_I2C_ADDR_PRIMARY,[high/low interrupt],[interrupt1 pin]) == false) {
     //fail to init BMA
     return;
   }
