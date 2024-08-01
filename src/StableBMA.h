@@ -1,13 +1,21 @@
 #pragma once
 
 /* Forked from bma.h by GuruSR (https://www.github.com/GuruSR/StableBMA) 
- * This fork is to improve Watchy functionality based on board version (via RTCType).
+ * This fork is to improve Watchy functionality based on board version
+ * (via RTCType).
+ *
  * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
- * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
- * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
- * Version 1.4, February 24, 2024 - Added Low Power mode to the defaultConfig().
- * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added conditionBMA.
+ * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.
+ *                                  License Update.
+ * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up
+ *                                  temperature code.
+ * Version 1.4, February 24, 2024 - Added Low Power mode to the
+ *                                  defaultConfig().
+ * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added
+ *                                  conditionBMA.
+ * Version 1.6, July     30, 2024 - Fixed V3 orientation, missing return and
+ *                                  int level.
  *
  * MIT License
  *
@@ -21,8 +29,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -33,7 +41,7 @@
  * SOFTWARE.
  * 
  * StableBMA is a fork of:
- * bma.h- Arduino library for Bosch BMA423 accelerometer software library.
+ * bma.cpp - Arduino library for Bosch BMA423 accelerometer software library.
  * Created by Lewis He on July 27, 2020.
  * github:https://github.com/lewisxhe/BMA423_Library
 */
@@ -72,8 +80,12 @@ public:
     StableBMA();
     ~StableBMA();
 
-    bool begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType,
-               uint8_t address = BMA4_I2C_ADDR_PRIMARY, uint8_t BMA423_INT1_PIN = 14, uint8_t BMA423_INT2_PIN = 12);  // Same as original but requires an RTCType and INT PINS from WatchyRTC or SmallRTC.
+    bool begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, 
+               bma4_delay_fptr_t delayCallBlack, uint8_t RTCType,
+               uint8_t address = BMA4_I2C_ADDR_PRIMARY,
+               bool usesHIGHINT = true,
+               uint8_t BMA423_INT1_PIN = 14, uint8_t BMA423_INT2_PIN = 12);
+               // Same as original but requires an RTCType and INT PINS from WatchyRTC or SmallRTC.
 
     void softReset();  // Same as original.
     void shutDown();   // Same as original.

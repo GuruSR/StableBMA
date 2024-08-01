@@ -1,13 +1,21 @@
 #include "StableBMA.h"
 
 /* Forked from bma.cpp by GuruSR (https://www.github.com/GuruSR/StableBMA) 
- * This fork is to improve Watchy functionality based on board version (via RTCType).
+ * This fork is to improve Watchy functionality based on board version
+ * (via RTCType).
+ *
  * Version 1.0, February  6, 2022 - Initial changes for Watchy usage.
  * Version 1.1, February  8, 2022 - Fixed readTemperatureF to show F properly.
- * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.  License Update.
- * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up temperature code.
- * Version 1.4, February 24, 2024 - Added Low Power mode to the defaultConfig().
- * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added conditionBMA.
+ * Version 1.2, July     19, 2022 - Fixed readTemperatureF to include errors.
+ *                                  License Update.
+ * Version 1.3, December 31, 2023 - Added orientation for V3.0 and cleaned up
+ *                                  temperature code.
+ * Version 1.4, February 24, 2024 - Added Low Power mode to the
+ *                                  defaultConfig().
+ * Version 1.5, July      9, 2024 - Fixed wrong getAccel assignments and added
+ *                                  conditionBMA.
+ * Version 1.6, July     30, 2024 - Fixed V3 orientation, missing return and
+ *                                  int level.
  *
  * MIT License
  *
@@ -21,8 +29,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -50,6 +58,7 @@ RTC_DATA_ATTR uint8_t BMA423x_INT1_PIN;
 RTC_DATA_ATTR uint8_t BMA423x_INT2_PIN;
 RTC_DATA_ATTR uint32_t BMA423x_INT1_MASK;
 RTC_DATA_ATTR uint32_t BMA423x_INT2_MASK;
+RTC_DATA_ATTR bool usingHIGHINT;
 
 // BMA condition
 RTC_DATA_ATTR uint8_t conditionBMA;
@@ -64,7 +73,11 @@ StableBMA::StableBMA()
 
 StableBMA::~StableBMA() {}
 
-bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBlack, bma4_delay_fptr_t delayCallBlack, uint8_t RTCType, uint8_t address, uint8_t BMA423_INT1_PIN, uint8_t BMA423_INT2_PIN)
+bool StableBMA::begin(bma4_com_fptr_t readCallBlack,
+                      bma4_com_fptr_t writeCallBlack,
+                      bma4_delay_fptr_t delayCallBlack, uint8_t RTCType,
+                      uint8_t address, bool usesHIGHINT,
+                      uint8_t BMA423_INT1_PIN, uint8_t BMA423_INT2_PIN)
 {
     if (__init ||
             readCallBlack == nullptr ||
@@ -78,6 +91,7 @@ bool StableBMA::begin(bma4_com_fptr_t readCallBlack, bma4_com_fptr_t writeCallBl
     BMA423x_INT2_PIN = BMA423_INT2_PIN;
     BMA423x_INT1_MASK = (1<<BMA423x_INT1_PIN);
     BMA423x_INT2_MASK = (1<<BMA423x_INT2_PIN);
+    usingHIGHINT = usesHIGHINT;
 
     __readRegisterFptr = readCallBlack;
     __writeRegisterFptr = writeCallBlack;
@@ -188,7 +202,7 @@ float StableBMA::readTemperature(bool Metric)
     return (Metric ? temp : (temp * 1.8 + 32.0));
 }
 
-float StableBMA::readTemperatureF() { StableBMA::readTemperature(false); }
+float StableBMA::readTemperatureF() { return StableBMA::readTemperature(false); }
 
 bool StableBMA::getAccel(Accel &acc)
 {
@@ -365,11 +379,10 @@ bool StableBMA::defaultConfig(bool LowPower)
     struct bma4_int_pin_config config ;
     Acfg cfg;
     config.edge_ctrl = BMA4_LEVEL_TRIGGER;
-    config.lvl = BMA4_ACTIVE_HIGH;
+    config.lvl = (usingHIGHINT ? BMA4_ACTIVE_HIGH : BMA4_ACTIVE_LOW);
     config.od = BMA4_PUSH_PULL;
     config.output_en = BMA4_OUTPUT_ENABLE;
     config.input_en = BMA4_INPUT_DISABLE;
-
     cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
     cfg.range = BMA4_ACCEL_RANGE_2G;
     cfg.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
@@ -392,7 +405,7 @@ bool StableBMA::defaultConfig(bool LowPower)
             remap_data.x_axis = 1;
             remap_data.x_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
             remap_data.y_axis = 0;
-            remap_data.y_axis_sign = (__RTCTYPE == 1 || __RTCTYPE == 3 ? 1 : 0);
+            remap_data.y_axis_sign = (__RTCTYPE == 1 ? 1 : 0);
             remap_data.z_axis = 2;
             remap_data.z_axis_sign = 1;
             return StableBMA::setRemapAxes(&remap_data);
